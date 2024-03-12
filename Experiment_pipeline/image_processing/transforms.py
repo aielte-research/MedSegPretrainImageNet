@@ -3,39 +3,6 @@ import cv2
 
 from transform import TransformWrapper
 
-class CLAHE(object):
-    
-    rgb_channels = ('red', 'green', 'blue')
-    
-    def __init__(self, clipLimit = 40.0, tileGridSize = (8, 8), channels = 'all', *args, **kwargs):
-        if not isinstance(tileGridSize, (tuple, list)):
-            tileGridSize = (tileGridSize,) * 2
-        self.clahe = cv2.createCLAHE(clipLimit = clipLimit, tileGridSize = tileGridSize)
-        if channels != 'all':
-            if not isinstance(channels, (list, tuple)):
-                channels = (channels,)
-            self.channels = []
-            for channel in channels:
-                if channel in self.rgb_channels:
-                    self.channels.append(self.rgb_channels.index(channel))
-                elif isinstance(channel, int):
-                    self.channels.append(channel)
-                else:
-                    raise ValueError(f'Each channels should either be one one of {self.rgb_channels} or an int, not {channel}.')
-        else:
-            self.channels = 'all'
-
-    def __call__(self, x, *args, **kwargs):
-        x = np.asarray(x*255, dtype = np.uint8)
-        # print(x.ndim, x.shape, x.max())
-        if x.squeeze().ndim == 2:
-            # print(x)
-            return self.clahe.apply(x)/255
-        else:
-            axes = self.channels if self.channels != 'all' else range(x.shape[0])
-            for i in axes:
-                x[i] = self.clahe.apply(x[i])
-            return x/255
         
 class ToNumpyArray(TransformWrapper):
     
