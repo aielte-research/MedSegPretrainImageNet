@@ -10,7 +10,6 @@ from segmentation.models import blocks
 
 from exception_handling import handle_exception
 
-# TODO: találni nekik egy jobb helyet
 
 def drop_path(x, drop_prob: float = 0., training: bool = True):
     if drop_prob == 0. or not training:
@@ -23,14 +22,7 @@ def drop_path(x, drop_prob: float = 0., training: bool = True):
     return output
 
 
-
-# def stoch_depth_calc(depth, stoch_depth_type = 'swin_unet', min_prob = 0., max_prob = 0.5):
-#     if stoch_depth_type == 'swin_unet':
-#         down_unit_number = depth + 1
-#         probs = np.linspace(min_prob, max_prob, down_unit_number)
-        
-#     return probs[:-1], probs[-1], np.flip(probs)[1:]
-
+# Function that calculates the drop probabilities for stochastic depth
 def stoch_depth_calc(depth, width, stoch_depth_type = 'swin_unet', min_prob = 0, max_prob = 0.5):
     if stoch_depth_type == 'swin_unet':
         down_unit_number = (depth + 1) * width
@@ -50,10 +42,14 @@ class UNet_encoder(nn.Module):
     Arguments:
         basic_block, stem, downsampling: block dictionaries
         depth: number of downsampling in the model
+        width: number of blocks in a level
         channels: list of channel numbers after the end of levels. Defaults to powers of 2 starting with 64
         residual_connections: can add different types of residual connections around basic blocks
-        ...
-
+        change_channel_in_block: if true, then number of channels will be changed inside the block, otherwise it will happen during downsampling
+        trainable_downsampling : whether the downsampling block is trainable
+        stochastic_depth_rate : max_prob for stoch_depth_calc
+        layer_scaling: layer scaling parameter
+        init_scheme: initialization scheme
     '''
     
     
@@ -106,7 +102,6 @@ class UNet_encoder(nn.Module):
                                                              out_channels= self.channels[0])
         else:
             self.first_block = nn.Identity()
-
 
         block_constr = utils.get_class_constr(basic_block.key())
         self.integrated_downsample = downsampling == None
@@ -251,10 +246,10 @@ class UNet_decoder(nn.Module):
         channels: List of channel numbers
                 Starts with the output channel number of the encoder, after that the channels at the end of the decoder levels
         residual_connections: can add different types of residual connections around basic blocks
-        skip_connections_list: list of number of channels of the data tensors comming through the skip connections
+        skip_con_channels_list : list of number of channels of the data tensors comming through the skip connections
                                 the length of this list determines the number of skip connections
-        ...
-
+        stochastic_depth_rate : max_prob for stoch_depth_calc
+        layer_scaling : layer scaling parameter
     '''
 
     def __init__(self, basic_block = None, upsampling_block = None,  mixing_block = None, init_scheme = None, residual_connections = False,
@@ -401,10 +396,18 @@ class UNet(nn.Module):
         downsampling_block, up_block, upsampling_block, basic_block, mixing_block,
         preproc_block, final_block: block dictionaries
         depth: number of downsampling in the model (channels list can overwrite this)
+        width: number of basic blocks on a level
         channels, encoder_channels_decoder_channels: list of channel numbers after the end of levels. Defaults to powers of 2 starting with 64.
+        skip_con_channels_list : list of number of channels of the data tensors comming through the skip connections
+                                the length of this list determines the number of skip connections
+        residual_connections: can add different types of residual connections around basic blocks
+        stochastic_depth_rate : max_prob for stoch_depth_calc
         final_activation: final activation dictionary
-        ...
-
+        layer_scaling: layer scaling parameter
+        change_channel_in_block: if true, then number of channels will be changed inside the block, otherwise it will happen during downsampling
+        trainable_downsampling : whether the downsampling block is trainable
+        img_ch, output_ch: number of channels of the input and output
+        encoder: model dictionary for an encoder different to the standard UNet encoder
     '''
 
     PARAMS = {
@@ -486,10 +489,6 @@ class UNet(nn.Module):
             },
         'architecture/trainable_downsampling': {
             'argument name': 'trainable_downsampling',
-            'default': False
-            },
-        'architecture/linear_channel_mapping': {
-            'argument name': 'linear_channel_mapping',
             'default': False
             },
         'architecture/encoder': {'argument name': 'encoder', 'default': None},
