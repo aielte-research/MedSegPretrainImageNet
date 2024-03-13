@@ -2,14 +2,12 @@ import csv
 import itertools
 import math
 from typing import Dict, Iterable, Literal, Optional, Union
-import neptune.new as neptune
 import metrics
 
 from tqdm import tqdm
 
 import os
 import torch
-from metrics.early_stopping import EarlyStoppingWrapper
 from optim.scheduler import SchedulerWrapper
 
 from utils.config_dict import ConfigDict
@@ -22,7 +20,6 @@ def predict(model : torch.nn.Module, ds : Iterable[Dict[str, torch.Tensor]],
             accumulation_scale : int = 1, pred_idx : int = 0,
             device : str = 'cuda' if torch.cuda.is_available() else 'cpu',
             train : bool = True, log_to_device : bool = True, destination : str = None,
-            log_to_neptune : bool = False, run : Optional[neptune.Run] = None, name : str = '',
             last : bool = False, learning_rate_keywords = [],
             grad_clip_value : Optional[float] = torch.inf,
             grad_clip_norm_type : Union[float, Literal['inf']] = 'inf',
@@ -121,11 +118,6 @@ def predict(model : torch.nn.Module, ds : Iterable[Dict[str, torch.Tensor]],
                         if write_header:
                             writer.writeheader()
                         writer.writerow(metric_value_dict)
-
-                # log the metrics to neptune
-                if log_to_neptune:
-                    for metric, value in metric_value_dict.items():
-                        run[name + '/batch_logs/' + metric + '/'].log(value)
         
         except Exception as e:
             if accumulation_scale == 1:
@@ -145,10 +137,8 @@ def train_model(model : torch.nn.Module,
                 optimizer : torch.optim.Optimizer,
                 virtual_batch_size : int = 32,
                 true_batch_size : int = 1,
-                run : Optional[neptune.Run] = None,
                 metrics_and_loss : metrics.MetricsCalculator = None,
                 name : Optional[str]= None,
-                early_stopping : Optional[EarlyStoppingWrapper] = None,
                 scheduler : Optional[SchedulerWrapper]= None,
                 verbose : bool = True,
                 prediction_index : int = 0,
@@ -184,10 +174,8 @@ def train_model(model : torch.nn.Module,
     destination : str = tech_params.get('absolute path', '') + name + '/'
     num_epochs : int = config_dict['experiment/number of epochs']
     log_to_device : bool = tech_params['log to device']
-    log_to_neptune : bool = tech_params['log to neptune']
     
     log_batch_to_device = log_to_device and log_to_device != 'epoch'
-    log_batch_to_neptune = log_to_neptune and log_to_neptune != 'epoch'
     
     log_last_model = tech_params['log_last_model']
     log_best_model = tech_params['log_best_model']
@@ -227,8 +215,6 @@ def train_model(model : torch.nn.Module,
                     optimizer = optimizer,
                     scheduler = scheduler if getattr(scheduler, 'batch_update', False) else None,
                     log_to_device = log_batch_to_device,
-                    log_to_neptune = log_batch_to_neptune,
-                    run = run, name = name,
                     destination = destination + 'batch_logs.csv',
                     learning_rate_keywords = lr_kws,
                     grad_clip_value = grad_clip_value,
@@ -260,11 +246,6 @@ def train_model(model : torch.nn.Module,
                     if write_header:
                         writer.writeheader()
                     writer.writerow(metric_value_dict)
-            
-            # log metric values to neptune
-            if log_to_neptune:
-                for metric, value in metric_value_dict.items():
-                    run[name + '/epoch_logs/' + metric + '/'].log(value)
 
             # change the learning rate according to the scheduler
             if scheduler is not None and scheduler.epoch_update:
@@ -285,10 +266,6 @@ def train_model(model : torch.nn.Module,
                 torch.save(optimizer.state_dict(), destination + 'optimizer_state_dict.pt')
                 if scheduler is not None:
                     torch.save(scheduler.state_dict(), destination + 'scheduler_state_dict.pt')
-            
-            # activate early stopping if criteria are met
-            if early_stopping is not None and early_stopping.stop(metric_value_dict):
-                break
 
         except Exception as e:
             msg = f'Exception occured in epoch {i}.'
@@ -337,11 +314,6 @@ def train_model(model : torch.nn.Module,
                     if write_header:
                         writer.writeheader()
                     writer.writerow(metric_value_dict)
-            
-            # log metric values to neptune
-            if log_to_neptune:
-                for metric, value in metric_value_dict.items():
-                    run[name + '/test_logs/' + metric + '/'] = value
                     
         except Exception as e:
             msg = 'Exception occured while trying to evaluate the test data.'

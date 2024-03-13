@@ -124,7 +124,6 @@ class MetricsCalculator(object):
 
     METRIC_CALC_PATH = 'metrics/calculation'
     METRICS_PATH = 'metrics/metrics'
-    EARLY_STOPPING_PATH = 'metrics/early_stopping'
 
     PARAMS = {
         'thresholds': 0.5

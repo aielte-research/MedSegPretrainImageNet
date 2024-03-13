@@ -4,7 +4,7 @@ import sys
 import time
 import traceback
 
-LOG_DEST = '/projects/SegmentationPretraining/error_messages/' if socket.gethostname() == 'a100.cs.elte.hu' else '/data/SegmentationPretraining/error_msgs/'
+LOG_DEST = '../exceptions/'
 
 def handle_exception(e : Exception, exception_message : str, log_dest : str = LOG_DEST):
         """

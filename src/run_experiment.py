@@ -12,7 +12,6 @@ import socket
 from datetime import datetime
 import warnings
 
-import neptune.new as neptune
 import numpy as np
 import pandas as pd
 import torch
@@ -148,31 +147,6 @@ def experiment(config_dict : ConfigDict, original : Optional[Dict],
     else:
         save_destination = tech_params['absolute_path']
 
-    if not continued:
-        # initialises neptune run    
-        neptune_run = None
-        if not continued:
-            if tech_params['log to neptune']:
-                config_dict.fill_with_defaults(utils.neptune_dict, final = True)
-                neptune_params = config_dict['meta/neptune run'].trim()
-                neptune_run = neptune.init_run(
-                    neptune_params['project name'],
-                    name = tech_params['experiment name'],
-                    tags = neptune_params['tags'],
-                    description = neptune_params['description'],
-                    source_files = '*.py' if neptune_params['log source code'] else None
-                )
-                config_dict['meta/neptune_run/run_id'] = neptune_run.get_url().split('/')[-1]
-                                        
-                neptune_run['parameters'] = config_dict.trim().to_dict()
-                neptune_run['series_id'] = series_id
-            else:
-                neptune_run = neptune.init(config_dict['meta/neptune_run/project_name'],
-                                           run = config_dict['meta/neptune_run/run_id'])
-    else:
-        neptune_run = neptune.init(config_dict.get_str('meta/neptune_run/project_name'),
-                                   run = config_dict.get_str('meta/neptune_run/run_id'))
-    
     if tech_params['log_best_model']:
         tech_params.get_or_update('model_evaluation', ConfigDict()).fill_with_defaults(utils.model_eval)
     
@@ -182,14 +156,10 @@ def experiment(config_dict : ConfigDict, original : Optional[Dict],
                     
         with open(save_destination + 'config.yaml', 'w') as file: # log 
             yaml.dump(config_dict.trim().to_dict(lists_to_tuples = True), file, sort_keys = False)
-        if tech_params['log to neptune']:
-            neptune_run['config'].upload(save_destination + 'config.yaml')
         
         if original is not None:
             with open(save_destination + 'source_config.yaml', 'w') as file:
                 yaml.dump(original, file, sort_keys = False)
-            if tech_params['log to neptune']:
-                neptune_run['source_config'].upload(save_destination + 'source_config.yaml')
 
     # run trials
     for i in range(run_start, config_dict['experiment/number of trials'] + 1):
@@ -250,7 +220,7 @@ def experiment(config_dict : ConfigDict, original : Optional[Dict],
             # run trial
             run_exp(train_ds, val_ds, test_ds,
                     curr_destination, curr_seed + epoch_start * (run_start != i),
-                    config_dict.trim(), neptune_run,
+                    config_dict.trim(),
                     batch_size, bs, save_destination = save_destination,
                     partition_count = partition_count, idx = i, class_names = class_names,
                     epoch_start = epoch_start * (i == run_start),
@@ -260,7 +230,7 @@ def experiment(config_dict : ConfigDict, original : Optional[Dict],
             gc.collect()
             
             extensions = tech_params.get_str_tuple('export_plots_as')
-            compare_experiments(i, save_destination, neptune_run, extensions)
+            compare_experiments(i, save_destination, extensions)
 
         # catch exception and print them
         # if the exception is too long, it will be logged to a file
@@ -275,12 +245,7 @@ def experiment(config_dict : ConfigDict, original : Optional[Dict],
         lines = (f'{name}=={version}\n' for name, version in modules.items())
         with open(save_destination + 'environment.txt', 'w') as file:
             file.writelines(lines)
-        if tech_params['log to neptune']:
-            neptune_run['environment'].upload(save_destination + 'environment.txt')
             
-    if tech_params['log to neptune']:
-        neptune_run.stop()
-    
     log_data = {}
 
     if tech_params['log_to_device']:
@@ -288,20 +253,14 @@ def experiment(config_dict : ConfigDict, original : Optional[Dict],
                     'exp_name': tech_params['experiment_name'],
                     'save_path': save_destination,
                     'num_trials': config_dict['experiment/number_of_trials'],
-                    'log_to_neptune': tech_params['log_to_neptune'],
                     'tags': added_tags}
-
-        if tech_params['log_to_neptune']:
-                log_data['neptune_project_name'] = neptune_params['project_name']
-                log_data['neptune_run_id'] = config_dict['meta/neptune_run/run_id']
     
     return log_data
     
 
 def run_exp(train_data : Dict[str, Any], val_data : Dict[str, Any],
             test_data : Optional[Dict[str, Any]], destination : str,
-            curr_seed : int, config_dict : ConfigDict,
-            run : Union[neptune.Run, None], batch_size : int,
+            curr_seed : int, config_dict : ConfigDict, batch_size : int,
             bs : int, idx : Optional[int] = None,
             class_names : Tuple[str] = tuple(),
             continued : bool = False, epoch_start : int = 0,
@@ -336,28 +295,12 @@ def run_exp(train_data : Dict[str, Any], val_data : Dict[str, Any],
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
             nn_model = nn_model.to(device)
 
-        # log GFLOP count and number of parameters to neptune
-        if idx in (1, None) and tech_params['log to neptune'] and not continued:
-            try:
-                copied_data = copy.deepcopy(train_data)
-                run['model/GFLOPs'] = nn_model.get_number_of_flops(copied_data) / 1e9
-                del copied_data
-                gc.collect()
-            except Exception as e:
-                handle_exception(e, 'Exception occured while trying to calculate FLOP count.')
-            try:
-                run['model/parameters'] = nn_model.get_num_params()
-                run['model/trainable_parameters'] = nn_model.get_num_params(trainable_only = True)
-            except Exception as e:
-                handle_exception(e, 'Exception occured while trying to calculate number of parameters.')
-
         # initialises optimiser with given hyperparameters
         optim_dict = config_dict['training/optimizer']
         optimizer = optim.Optimizer(optim_dict, nn_model.parameters())
 
         # logs the number of batches in an epoch
         batches_per_epoch = math.ceil(len(train_data) / batch_size * bs)
-        run[name + '/epoch_logs/batches per epoch/'] = batches_per_epoch
 
         scheduler = None
         scheduler_dict = optim_dict.value()['learning_rate']
@@ -383,8 +326,6 @@ def run_exp(train_data : Dict[str, Any], val_data : Dict[str, Any],
 
         to_validate = len(getattr(val_data, 'dataloader', [])) > 0
         metric_calcs = metrics.MetricsCalculator(config_dict,
-                                                 neptune_run = run,
-                                                 neptune_save_path = name + '/plots/',
                                                  validate = to_validate,
                                                  exp_name = name,
                                                  loss = loss_fn,
@@ -403,7 +344,7 @@ def run_exp(train_data : Dict[str, Any], val_data : Dict[str, Any],
                     test_data, config_dict, metrics_and_loss = metric_calcs,
                     prediction_index = config_dict.get('training/prediction_index', 0),
                     optimizer = optimizer, scheduler = scheduler, early_stopping = early_stop,
-                    virtual_batch_size = batch_size, true_batch_size = bs, run = run, name = name,
+                    virtual_batch_size = batch_size, true_batch_size = bs, name = name,
                     verbose = config_dict.get('meta/technical/verbose'), epoch_start = epoch_start,
                     grad_clip_value = config_dict.get('training/gradient_clipping/max_value'),
                     grad_clip_norm_type = config_dict.get('training/gradient_clipping/norm'))
@@ -417,16 +358,11 @@ def run_exp(train_data : Dict[str, Any], val_data : Dict[str, Any],
                 extensions = tech_params.get_str_tuple('export_plots_as')
                 plot_and_save_history(logs_path = destination + 'epoch_logs.csv',
                                       destination = destination,
-                                      plot_destination = plot_destination, neptune_run = run,
+                                      plot_destination = plot_destination,
                                       baselines = config_dict.get('metrics/baselines', {}),
                                       name = name, extensions = extensions, **kwargs)
 
-            # uploads the model state dictionary to neptune
-            if tech_params['log to neptune'] and config_dict.get('neptune run/log model', False):
-                run['models/model_{}_state_dict'.format(idx)].upload(destination + 'model_state_dict.pt')
-
 def plot_and_save_history(logs_path : str, destination : str, plot_destination : str,
-                          neptune_run : Optional[neptune.Run],
                           name : str = '', baselines = {}, extensions = [], **kwargs):
     """
     Helper function that logs metric plots.
@@ -457,8 +393,7 @@ def plot_and_save_history(logs_path : str, destination : str, plot_destination :
                          legend = {'labels': labels},
                          dirname = plot_destination,
                          fname = metric_name + '_plot',
-                         baselines = baselines_for_metric),
-                    neptune_run[name + '/plots']
+                         baselines = baselines_for_metric)
                     )
         utils.export_plot(plotter, extensions)
         
@@ -468,7 +403,6 @@ def plot_and_save_history(logs_path : str, destination : str, plot_destination :
             utils.export_plot(plotter, [ext for ext in extensions if ext.lower().strip('.') != 'json'])
     csv_path = destination + 'best_scores.csv'
     pd.DataFrame(argmixes).to_csv(csv_path)
-    neptune_run[name + '/best_indices'].upload(csv_path)
 
 def get_argmixes(scores):
     if len(scores) == 0:
@@ -550,10 +484,6 @@ def fill_dict_with_name_fields(config_dict : ConfigDict, name_fields = None):
     for key, value in name_field_values.items():
         new_tag = f'{key}: {value}'
         added_tags.append(new_tag)
-
-    if config_dict['meta/technical/log_to_neptune']:
-        tags = list(config_dict.get('meta/neptune_run/tags', []))
-        config_dict['meta/neptune_run/tags'] = list(set((*tags, *added_tags)))
     
     if config_dict['meta/technical/log_to_device']:
         exp_name = config_dict['meta/technical/experiment name'].rstrip('_')
@@ -577,17 +507,8 @@ def get_logs_from_path(experiment, name_fields = None, project = None):
         if not os.path.isfile(cd_path):
             raise FileNotFoundError(f'Couldn\'t open logs from \'{cd_path}\': no such file.')
         config_dict = utils.config_dict.ConfigDict.from_yaml(cd_path)
-    elif os.path.isdir('/'.join(experiment.split('/')[:-2])):
+    else:
         raise FileNotFoundError(f'Couldn\'t open logs from \'{experiment}\': no such directory.')
-    else: # load config dict from neptune run id
-        elems = experiment.split('/')
-        run_id = elems[-1]
-        project_name = '/'.join(elems[:-1]) or project
-        run = neptune.init_run(project_name, run = run_id)
-        params = run.fetch()['parameters']
-        run.stop()
-        config_dict = utils.config_dict.ConfigDict(params)
-    
     config_dict = config_dict.trim()
     tech_params = config_dict['meta/technical']
     
@@ -598,16 +519,11 @@ def get_logs_from_path(experiment, name_fields = None, project = None):
                     'exp_name': tech_params['experiment_name'],
                     'save_path': tech_params['absolute_path'],
                     'num_trials': config_dict['experiment/number_of_trials'],
-                    'log_to_neptune': tech_params['log_to_neptune'],
                     'tags': fill_dict_with_name_fields(config_dict, name_fields)}
-
-        if tech_params['log_to_neptune']:
-                log_data['neptune_project_name'] = config_dict['meta/neptune_run/project_name']
-                log_data['neptune_run_id'] = config_dict['meta/neptune_run/run_id']
                 
     return log_data
 
-def compare_experiments(num_trials, save_path, neptune_run = None, extensions = []):
+def compare_experiments(num_trials, save_path, extensions = []):
     if num_trials < 2:
         return
 
@@ -658,15 +574,13 @@ def compare_experiments(num_trials, save_path, neptune_run = None, extensions = 
             handle_exception(e, msg)
         
         try:
-            neptune_log_path = neptune_run and neptune_run['variance_comparisons/plots']
             plotter = utils.framework.plotters.GeneralPlotter(
                                         dict(Ys = values,
                                             xlabel = 'epoch',
                                             ylabel = axis_name,
                                             legend = {'labels': labels},
                                             dirname = save_path + 'variance_comparisons/',
-                                            fname = f'{axis_name}_comparison'),
-                                        neptune_experiment = neptune_log_path)
+                                            fname = f'{axis_name}_comparison'))
             utils.export_plot(plotter, extensions = extensions)
         except Exception as e:
             msg = f'Exception occured while trying to plot variance comparisons for {axis_name}.'
@@ -675,9 +589,6 @@ def compare_experiments(num_trials, save_path, neptune_run = None, extensions = 
     with open(save_path + 'variance_comparisons/statistics.json', 'w') as stats_file:
         json.dump(statistics, stats_file, indent = 3, sort_keys = True)
     
-    if neptune_run is not None:
-        neptune_run['variance_comparisons/statistics'] = statistics
-
 def check_for_continued(modifiers : List[str], config_dict : utils.config_dict.ConfigDict):
     continued = '--continued' in modifiers
     run_start, epoch_start = 1, 0

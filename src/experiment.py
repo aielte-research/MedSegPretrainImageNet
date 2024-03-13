@@ -5,7 +5,6 @@ import time
 from typing import Dict, List
 import warnings
 
-import neptune.new as neptune
 import numpy as np
 import pandas as pd
 
@@ -105,13 +104,6 @@ def compare_experiments(logs, extensions = ['html', 'json']):
             best_values[mix_name + '_' + axis_name] = {label: mix(value_list) if len(value_list) > 0 else np.nan for label, value_list in zip(labels, values)}
             
             for i in range(num_exps):
-                if not logs_dict['current_experiment'][i]:
-                    continue
-                neptune_log_path = None
-                if logs_dict['log_to_neptune'][i]:
-                    neptune_run = neptune.init(logs_dict['neptune_project_name'][i],
-                                               run = logs_dict['neptune_run_id'][i])
-                    neptune_log_path = neptune_run[f'run_{k}/comparisons']
                 
                 plotter = utils.framework.plotters.GeneralPlotter(
                                                         dict(Ys = values,
@@ -119,8 +111,7 @@ def compare_experiments(logs, extensions = ['html', 'json']):
                                                              ylabel = axis_name,
                                                              legend = {'labels': labels},
                                                              dirname = logs_dict['save_path'][i] + f'/run_{k}/comparisons',
-                                                             fname = f'{axis_name}_comparison'),
-                                                        neptune_experiment = neptune_log_path)
+                                                             fname = f'{axis_name}_comparison'))
                 utils.export_plot(plotter, extensions)
                 if logs_dict['log_to_neptune'][i]:
                     neptune_run.stop()
@@ -135,13 +126,6 @@ def compare_experiments(logs, extensions = ['html', 'json']):
             lasts_dest = logs_dict['save_path'][i] + f'/run_{k}/comparisons/last_values_comparison.csv'
             bests_df.to_csv(bests_dest)
             lasts_df.to_csv(lasts_dest)
-            if logs_dict['log_to_neptune'][i]:
-                neptune_run = neptune.init(logs_dict['neptune_project_name'][i],
-                                            run = logs_dict['neptune_run_id'][i])
-                neptune_log_path = neptune_run[f'run_{k}/comparisons']
-                for path, name in zip((bests_dest, lasts_dest), ('best', 'last')):
-                    neptune_log_path[f'tables/{name}_values'].upload(path)
-                neptune_run.stop()
                 
 
 def get_comparisons(cd : config_dict.ConfigDict):
@@ -157,7 +141,7 @@ def get_comparisons(cd : config_dict.ConfigDict):
                 path = path.key()
             path = path.replace(config_dict.ConfigDict.SLASH_SUBSTITUTE, '/')
             msg = f'An excpetion occured trying to load logs from experiment {path}. Comparisons to that experiment will not be logged.'
-            if isinstance(e, (FileNotFoundError, neptune.exceptions.NeptuneException)):
+            if isinstance(e, FileNotFoundError):
                 warnings.warn(msg + f'\n{e}')
             else:
                 handle_exception(e, msg)
@@ -166,8 +150,3 @@ def get_comparisons(cd : config_dict.ConfigDict):
 
 if __name__ == '__main__':
     main()
-
-def unrecognised_hyperparam_warning(key):
-    """Helper function to raise warning when a hyperparameter key is not recognised."""
-    warning_msg = 'Ignoring unrecognised hyperparameter \'{}\'.'.format(key)
-    warnings.warn(warning_msg, UserWarning)
