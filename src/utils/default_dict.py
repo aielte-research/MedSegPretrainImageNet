@@ -1,15 +1,5 @@
 from numpy.random import default_rng
 
-# dictionary of general hyperparameters
-# keys are the names of hyperparameters, values are dicts
-# every value should have an 'init' and 'arguments' entry
-# 'init' is a callable that constructs an instance of the activation function
-# 'arguments' is a dict of the hyperparameters of the activation function
-# with keys corresponding to hyperparameters, and values being dicts
-# with a 'default' value that sets the value given to the hyperparameter if not otherwise specified
-# and an 'argument name' str that specifies what is the name of the argument
-# corresponding to that hyperparameter in the constructor function 'init'
-
 default_dict = {'model': 'segmentation.models.UNet',
                 'meta/technical/experiment_name': 'Experiment',
                 'meta/technical/save_destination': '../logs/',
