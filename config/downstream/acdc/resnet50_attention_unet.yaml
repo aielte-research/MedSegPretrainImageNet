@@ -1,0 +1,239 @@
+data:
+  data:
+    segmentation.datasets.ACDC:
+      image_sizes: 224
+      validate_on_test: true
+  sampling:
+    batch_size: 24
+    train:
+      relative_size: 1.0
+  transforms:
+    train: !!python/tuple
+    - segmentation.transforms.wrapped_transforms.RandomRotation:
+        border_mode: BORDER_CONSTANT
+        limit: 180
+        value: 0
+        mask_value: 0
+    - segmentation.transforms.wrapped_transforms.RandomFlip:
+        vertical: true
+        horizontal: false
+        probability: 0.5
+    - transform.RepeatChannels
+    val: transform.RepeatChannels
+    casting:
+      mask: torch.LongTensor
+model:
+  segmentation.models.UNet:
+    model: ResNet50 Attention U-Net
+    architecture:
+      in_channel_size: 3
+      out_channel_size: 1
+      residual_connections: false
+      activation_function:
+        final: sigmoid
+      depth: 4
+      decoder_channels: !!python/tuple
+      - 256
+      - 128
+      - 64
+      - 32
+      - 16
+      skip_con_channels: !!python/tuple
+      - 1024
+      - 512
+      - 256
+      - 64
+      encoder:
+        classification.models.DeepResNet:
+          version: v1
+          bias: false
+          head: false
+          stochastic_depth_rate: 0.1
+      width: 1
+      mixing_block: segmentation.models.blocks.AttentionBlock
+      encoder_channels: null
+      linear_channel_mapping: false
+    weight_init:
+      random:
+        torch.nn.init.kaiming_normal_:
+          a: 0
+          mode: fan_in
+          nonlinearity: relu
+      encoder:
+        - weights: null
+          pretrained_encoder: false
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_1.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 1
+          Imagenet_accuracy: 0.014
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_5.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 5
+          Imagenet_accuracy: 0.101
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_20.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 20
+          Imagenet_accuracy: 0.300
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_50.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 50
+          Imagenet_accuracy: 0.536
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_100.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 100
+          Imagenet_accuracy: 0.580
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_150.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 150
+          Imagenet_accuracy: 0.623
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_200.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 200
+          Imagenet_accuracy: 0.683
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_250.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 250
+          Imagenet_accuracy: 0.726
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_300.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 300
+          Imagenet_accuracy: 0.739
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_1.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 1
+          Imagenet_accuracy: 0.008
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_5.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 5
+          Imagenet_accuracy: 0.054
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_20.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 20
+          Imagenet_accuracy: 0.302
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_50.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 50
+          Imagenet_accuracy: 0.482
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_100.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 100
+          Imagenet_accuracy: 0.555
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_150.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 150
+          Imagenet_accuracy: 0.598
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_200.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 200
+          Imagenet_accuracy: 0.671
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_250.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 250
+          Imagenet_accuracy: 0.719
+        - weights: ../encoder_weights/resnet50/resnet50_simple_pretraining_checkpoint_epoch_300.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 300
+          Imagenet_accuracy: 0.748
+      freeze_weights:
+        - !!python/tuple []
+        - encoder
+training:
+  loss:
+    segmentation.losses.DiceLoss:
+      batchwise: true
+      include_background: true
+      apply_softmax: false
+      smoothing_term: 1.0e-05
+  optimizer:
+    sgd:
+      weight_decay: 0.0001
+      momentum: 0.9
+      learning_rate:
+        optim.scheduler.PolyLearningRateDecay:
+          base: 0.05
+          exponent: 0.9
+          iteration_unit: batch
+          number_of_iterations: auto
+          last_epoch: -1
+      nesterov_momentum: false
+      momentum_dampening: 0.0
+metrics:
+  calculation:
+    thresholds: 0.5
+    draw_mask_contour: false
+    number_of_images_to_save: 5
+    label_type: mask
+    save_sample_images_at: last
+  metrics: !!python/tuple
+  - metrics.DiceIndex
+  - metrics.BalancedAccuracy
+experiment:
+  number_of_epochs: 150
+  number_of_trials: 1
+meta:
+  technical:
+    log_metric_and_loss_plots: true
+    log_to_device: true
+    log_to_neptune: epoch
+    maximum_actual_batch_size: 24
+    name_fields: !!python/tuple
+    - model/segmentation.models.UNet/model
+    - data/data
+    - model/segmentation.models.UNet/weight_init/encoder/training_length:
+        keyword: pretraining_length
+        default: 0
+    - model/segmentation.models.UNet/weight_init/encoder/training_scheme
+    - model/segmentation.models.UNet/weight_init/encoder/Imagenet_accuracy
+    - model/segmentation.models.UNet/weight_init/freeze_weights
+    - data/sampling/train/relative_size:
+        keyword: train_set_size
+    model_evaluation:
+      metric: val_metrics/dice_index_threshold_0.5
+      mode: max
+    seed: 123124
+    verbose: false
+    number_of_data_loader_workers: 0
+    use_cudnn_benchmarking: false
+    use_deterministic_algorithms: true
+    number_of_cpu_threads: 16
+    export_plots_as: !!python/tuple
+    - json
+    - html
+    log_best_model: true
+    log_last_model: true
