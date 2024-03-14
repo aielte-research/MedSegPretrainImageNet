@@ -124,7 +124,7 @@ Weights of the ImageNet-pretrained models should be in an `../encoder_weights` d
 The `results` directory contains detailed results for two sets of experiments:
 * `downstream_scores.csv` lists the Dice index, Jaccard index, MCC, mAP, HD95, balanced accuracy, sensitivity, AUC, accuracy, and specificity scores of each model on the downstream datasets (though only a subset of these were calculated for the multiclass case of ACDC);
 * `robustness_scores.csv` lists the calculated robustness of each encoder, through a combination of
-    * distance metrics: cosine distance, *L*^2^ distance, and the inverse of the Pearson correlation,
+    * distance metrics: cosine distance, L2 distance, and the inverse of the Pearson correlation,
     * margins,
     * representation taken from different encoder levels,
     * pooled and not pooled.
