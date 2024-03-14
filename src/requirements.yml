@@ -1,7 +1,8 @@
 name: medsegm_clean
 channels:
-  - conda-forge
   - defaults
+  - pytorch
+  - nvidia
 dependencies:
   - python=3.9
   - bokeh=2.4.1
@@ -12,17 +13,18 @@ dependencies:
   - scipy=1.7.1
   - sympy=1.10.1
   - scikit-learn=1.0.1
-  - nibabel=5.2.0
   - pillow=9.4.0
+  - libpng
+  - pytorch=1.11.0
+  - torchvision
+  - pytorch-cuda=11.8
   - pip
   - pip:
     - albumentations==1.3.0
     - einops==0.6.1
-    - fvcore==0.1.5
     - opencv-python-headless==4.7.0.72
     - pandas==2.0.0
     - timm==0.6.13
     - tqdm==4.65.0
-    - torch==1.11.0
-    - torchvision
     - fvcore
+    - nibabel==5.2.0
