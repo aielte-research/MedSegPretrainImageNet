@@ -78,6 +78,7 @@ The train_and_val folder contains the data from the [original](https://www.kaggl
 ```
 
 Root directory: `../data/idrid/`
+
 The `../Original Images/Training Set` and `../Original Images/Test Set` contains the ?x? images from the original dataset.
 The  folders in `../All Segmentation Groundtruths/Training Set` and `../All Segmentation Groundtruths/Training Set` contains the .tif files with the segmentation masks (as in the original dataset).
 
