@@ -7,6 +7,7 @@ This repository contains the code and all the results related to the paper “Im
 
 ### Requirements
 
+For the list of required packages see `scr/requirements.yml`.
 
 ### Data
 
