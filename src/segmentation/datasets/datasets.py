@@ -406,9 +406,6 @@ class ACDC(data.Dataset):
 
         self.train = {'x': np.expand_dims(train_imgs, 1),
                       'mask': np.expand_dims(train_labels, 1)}
-        
-        print(self.train['x'].shape)
-        print(self.train['mask'].shape)
 
         self.val = {'x': np.expand_dims(val_imgs, 1),
                     'mask': np.expand_dims(val_labels, 1)}
