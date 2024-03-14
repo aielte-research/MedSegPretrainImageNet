@@ -26,7 +26,7 @@ Directory structures for the different datasets:
 
 ```
 
-Patient folders contain data as it is in the original dataset.
+Patient folders contain data as it is in the [original dataset](https://www.creatis.insa-lyon.fr/Challenge/acdc/).
 
 
 #### COVID-QU:
@@ -47,7 +47,7 @@ Patient folders contain data as it is in the original dataset.
 ```
 
 The imgs.npy and inf_masks.npy files contain Nx256x256 shaped arrays with the images and the segmentation masks respectively.
-The train_and_val folder contains the data from the original train and validation set. The test folder contains the data from the original test set.
+The train_and_val folder contains the data from the [original](https://www.kaggle.com/datasets/anasmohammedtahir/covidqu) train and validation set. The test folder contains the data from the original test set.
 
 
 #### IDRiD:
