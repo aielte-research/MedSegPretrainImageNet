@@ -5,10 +5,6 @@ import pandas as pd
 import torchvision
 import numpy as np
 
-from PIL import Image
-
-import socket
-
 import data
 
 class ImageNet(data.Dataset):
@@ -20,17 +16,12 @@ class ImageNet(data.Dataset):
     ARRAYS_PATH = BASE_PATH + 'data/'
     LABELS_PATH = BASE_PATH + 'labels.json'
 
-    HOST = 'a100.cs.elte.hu'
-
     @staticmethod
     def fill_kwargs(config_dict):
         if not config_dict['use_official_validation']:
             config_dict.get_or_update('split', ImageNet.SPLIT)
     
     def __init__(self, config_dict, seed = None, *args, **kwargs):
-
-        if socket.gethostname() != self.HOST:
-            raise FileNotFoundError(f'The ImageNet data is only available on {self.HOST}, not {socket.gethostname()}.')
         
         with open(self.LABELS_PATH, 'r') as labels_file:
             labels_dict = json.load(labels_file)

@@ -1,5 +1,5 @@
 """
-Code lifted from https://github.com/loli/medpy.git
+Code copied from https://github.com/loli/medpy.git
 """
 
 # Copyright (C) 2013 Oskar Maier

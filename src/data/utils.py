@@ -171,14 +171,6 @@ class BalancedDataset(torch.utils.data.Dataset):
         return self.partition_count * real_length
           
 def create_index_list(ds_len, nr_pos, reuse, p, n, bs, cut):
-    '''
-    A függvény, ami megadja az indexek listáját, ami szerint végig kell haladni az adathalmaz elemein az adott epochban.
-    ds_len: Az adathalmaz mérete.
-    nr_pos: A datasetben a pozitívan annotált elemek száma.
-    reuse: A lefixált pozitív és negatív adatpontokat újrahasználjuk-e mikor feltöltjük a batchekben maradt helyet véletlenszerűen. Opciók: "no" (ezek jelenleg nem: "all", "pos")
-    p, n: A batchekben lefixált pozitív/negatív adatpontok száma
-    bs: annak a felosztásnak a mérete, ami szerint szeretnénk, hogy biztos legyen benne fix mennyiségű poz vagy neg elem
-    '''
     
     index_list=list(range(ds_len))
     new_index_list=[]
@@ -207,17 +199,6 @@ def create_index_list(ds_len, nr_pos, reuse, p, n, bs, cut):
     shuf_pos=random.sample(index_list[nr_neg:], nr_pos)
     shuf_neg=random.sample(index_list[:nr_neg], nr_neg)
 
-# ----
-#     if reuse=="all":
-#         rest=make_cut(shuf_pos, shuf_neg, cut)
-#         shuffled_indices=random.sample(rest, len(rest))
-# #         print("Újrahasználjuk")
-#     elif reuse=="pos":
-#         rest=make_cut(shuf_pos, shuf_neg[n*batch_nr:], cut)
-#         shuffled_indices=random.sample(rest, len(rest))
-# #         print("Pozitívakat használjuk újra")
-# ----
-
     if reuse=="no":
         # Cuts spare images from those which are used to fill the not fixed positive or negative positions
         rest=make_cut(shuf_pos[p*batch_nr:], shuf_neg[n*batch_nr:], cut)
@@ -234,16 +215,9 @@ def create_index_list(ds_len, nr_pos, reuse, p, n, bs, cut):
         
     return batch_nr, new_index_list
 
-  
-# TODO (or to consider): padding now only considers the actual loaded batch,
-# so using padding with or without gradient accumulation is not equivalent
+
 def get_batch(dataset, idx_en, batch_size, pad_with = None):
-    '''
-    Megkreálja a batchet.
-    dataset: Balanceddataset osztályú adathalmaz
-    idx_en: enumerate object, meghatározza milyen sorrendben kérjük az adathalmaz elemeit
-    batch_size: batch_size (amit egyszerre betöltünk)
-    '''
+    
     batch = {}
     
     for _ in range(batch_size):
@@ -270,16 +244,7 @@ def get_batch(dataset, idx_en, batch_size, pad_with = None):
 
 
 class DataIterator:
-    '''Egy iterable object, amin végigiterálva megkapjuk a batcheket. 
     
-    dataset: Mindenképp a Balanceddataset objektum kell legyen a dataset.
-    (nem használjuk) reuse: A lefixált pozitív és negatív adatpontokat újrahasználjuk-e mikor feltöltjük a batchekben maradt helyet véletlenszerűen. Opciók: "no", "all", "pos"
-    min_pos_ratio, min_neg_ratio: A batchekben lefixált pozitív/negatív adatpontok arány a batchmérethez (bs) képest
-    bs: annak a felosztásnak a mérete, ami szerint szeretnénk, hogy biztos legyen benne fix mennyiségű poz vagy neg elem
-    loaded_bs: A valódi (egyszerre betöltött) batchek mérete
-    sort_by: a kulcs, ami szerint rendezni akarjuk az adathalmazt
-    pad_with: None, vagy az az érték, amivel padelni akarunk az utolsó tengely szerint, ha egy batchben nem csupa ugyanolyan hosszú adat van
-    '''
     def __init__(self, dataset, min_pos_ratio, min_neg_ratio, bs, loaded_bs,
                  reuse = 'no', sort_by = None, pad_with = None):
         self.loaded_batch_size=loaded_bs    #Ekkora batchet ad valójában
@@ -319,7 +284,6 @@ class DataIterator:
     def __iter__(self):
         return(self)
     
-    # Amíg van még elég elem az idx_list-ben, addig betölt egy új batch-et
     def __next__(self):
         if self.index < self.idx_list_len - self.loaded_batch_size:
             state, batch=get_batch(self.dataset, self.idx_en, self.loaded_batch_size, pad_with = self.pad_with)
