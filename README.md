@@ -93,7 +93,7 @@ The  folders in `../All Segmentation Groundtruths/Training Set` and `../All Segm
 Experiments can be run with the following script:
 
 ```
-python experiment.py [path_to_config.yaml]
+python src/experiment.py [path_to_config.yaml]
 ```
 
 Config files for training models on each dataset can be found in the `config` directory.
