@@ -48,7 +48,7 @@ class COVIDQUDataset(data.Dataset):
         }
     
     # path to data (arrays in .npy format)
-    PATH = '../COVID_QU'
+    PATH = '../data/COVID_QU'
 
     # prepare data to be loaded
     # (functions are created instead of loading data to decrease memory consumption)
@@ -185,7 +185,7 @@ class IDRiD(data.Dataset):
             # but a separate probability for each class
             # (e. g. the end activation should be a sigmoid instead of a softmax layer)
     
-    SUPER_DIR = '../idrid/'
+    SUPER_DIR = '../data/idrid/'
     BASE_PATH = SUPER_DIR + 'Segmentation/A. Segmentation/'
     IMGS_PATH = BASE_PATH + '1. Original Images/'
     MASKS_PATH = BASE_PATH + '2. All Segmentation Groundtruths/'
@@ -344,7 +344,7 @@ class ACDC(data.Dataset):
     CLASSES = ('RV cavity','myocardium', 'LV cavity')
 
     # path to data (arrays in .npy format)
-    PATH = '../ACDC/'
+    PATH = '../data/ACDC/'
 
     
     def __init__(self, ds_dict, seed = None, *args, **kwargs):
