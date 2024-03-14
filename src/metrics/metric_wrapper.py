@@ -159,9 +159,6 @@ class MetricsCalculator(object):
         for metric_name in config_dict[MetricsCalculator.METRICS_PATH]:
             metric_constr = utils.get_class_constr(metric_name)
             MetricsCalculator.fill_metric_kwargs(metric_constr, metric_calcs_dict)
-        
-        if MetricsCalculator.EARLY_STOPPING_PATH in config_dict:
-            utils.fill_dict(config_dict[MetricsCalculator.EARLY_STOPPING_PATH])
 
     @staticmethod
     def requires_threshold(metric_constr) -> bool:

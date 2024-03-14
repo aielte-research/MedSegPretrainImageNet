@@ -22,7 +22,6 @@ from collections.abc import Iterable
 import data
 import loss
 import metrics
-from metrics import early_stopping
 import model
 import optim
 import transform
@@ -131,7 +130,7 @@ def experiment(config_dict : ConfigDict, original : Optional[Dict],
         date_folder = str(datetime.now()).split(' ')[0]
         save_destination = save_destination + date_folder + '/'
         if not os.path.isdir(save_destination):
-            os.mkdir(save_destination)
+            os.makedirs(save_destination)
         if tech_params['log to device']:
             save_destination += tech_params['experiment_name']
             default_dest = save_destination
@@ -331,19 +330,12 @@ def run_exp(train_data : Dict[str, Any], val_data : Dict[str, Any],
                                                  loss = loss_fn,
                                                  class_names = class_names
                                                  )
-
-        early_stopping_dict = config_dict.get('metrics/early_stopping')
-        if early_stopping_dict is not None:
-            early_stop = utils.create_object_from_dict(early_stopping_dict,
-                                                       wrapper_class = early_stopping.EarlyStoppingWrapper)
-        else:
-            early_stop = None
         
         # trains the model and logs the results
         train_model(nn_model, train_data, val_data if to_validate else None,
                     test_data, config_dict, metrics_and_loss = metric_calcs,
                     prediction_index = config_dict.get('training/prediction_index', 0),
-                    optimizer = optimizer, scheduler = scheduler, early_stopping = early_stop,
+                    optimizer = optimizer, scheduler = scheduler,
                     virtual_batch_size = batch_size, true_batch_size = bs, name = name,
                     verbose = config_dict.get('meta/technical/verbose'), epoch_start = epoch_start,
                     grad_clip_value = config_dict.get('training/gradient_clipping/max_value'),
@@ -495,7 +487,7 @@ def fill_dict_with_name_fields(config_dict : ConfigDict, name_fields = None):
     
     return added_tags
 
-def get_logs_from_path(experiment, name_fields = None, project = None):
+def get_logs_from_path(experiment, name_fields = None):
     
     if isinstance(experiment, utils.config_dict.ConfigDict):
         experiment = experiment.key()

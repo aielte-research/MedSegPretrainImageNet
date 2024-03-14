@@ -130,12 +130,11 @@ def compare_experiments(logs, extensions = ['html', 'json']):
 
 def get_comparisons(cd : config_dict.ConfigDict):
     name_fields = cd.get('meta/technical/name_fields', [])
-    project_name = cd.get('meta/neptune_run/project_name', utils.neptune_dict['meta/neptune run/project name']['default'])
     
     comparisons = []
     for path in cd.elements_of('meta/technical/compare_to'):
         try:
-            comparisons.append(get_logs_from_path(path, name_fields, project_name))
+            comparisons.append(get_logs_from_path(path, name_fields))
         except Exception as e:
             if isinstance(path, config_dict.ConfigDict):
                 path = path.key()
