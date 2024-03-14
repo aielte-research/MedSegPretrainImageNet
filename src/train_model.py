@@ -252,7 +252,7 @@ def train_model(model : torch.nn.Module,
                 scheduler.step()
             
             # log the model weights to a state dictionary
-            if log_to_device: # TODO: ezt kezeld ha multi_GPU futtatás van
+            if log_to_device:
                 model_state_dict = model.state_dict() if not parallel_train else model.module.state_dict()
                 if log_last_model:
                     torch.save(model_state_dict, destination + 'last_model_state_dict.pt')

@@ -271,7 +271,7 @@ class UNet_decoder(nn.Module):
                 kwargs['position'] = position
             if utils.accepts_kwarg(block_constr, 'stochastic_depth_rate'):
                 kwargs['stochastic_depth_rate'] = stochastic_depth_rate
-            return utils.create_object_from_dict(basic_block, wrapper_class = model.Model, **kwargs)  #TODO: Ez nem jó a felfelé ágban így, ha beépített downsampling van lefelé
+            return utils.create_object_from_dict(basic_block, wrapper_class = model.Model, **kwargs)
         
 
         self.res_con = bool(residual_connections)
@@ -515,7 +515,7 @@ class UNet(nn.Module):
         if act_func_name in model.activations.activation_funcs_dict:
             act_default_dict = model.activations.activation_funcs_dict[act_func_name]['arguments']
             act_func_dict.fill_with_defaults(act_default_dict)
-        elif act_default_dict is not None:      # NOTE: Itt valami hiba van, ez nincs még definiálva. Az act_func_dict kéne talán?
+        elif act_default_dict is not None:
             utils.fill_dict(config_dict['architecture/activation function/final'])
         
         res_con_dict = config_dict['architecture/residual_connections']

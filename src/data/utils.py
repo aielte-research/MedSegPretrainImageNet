@@ -11,7 +11,7 @@ def calc_balance_factor(pos_len, neg_len, pos_ratio_in_dataset, **kwargs) -> flo
     # pos_ratio_in_dataset: ratio of positive elements in the final dataset after over/under sampling
     balance_factor = pos_ratio_in_dataset * neg_len / ((1-pos_ratio_in_dataset) * pos_len)
     
-    return balance_factor       # A visszaadott balance_factor nem feltétlenül egész szám!
+    return balance_factor
 
 
 class BalancedDataset(torch.utils.data.Dataset):
@@ -247,7 +247,7 @@ class DataIterator:
     
     def __init__(self, dataset, min_pos_ratio, min_neg_ratio, bs, loaded_bs,
                  reuse = 'no', sort_by = None, pad_with = None):
-        self.loaded_batch_size=loaded_bs    #Ekkora batchet ad valójában
+        self.loaded_batch_size=loaded_bs
         self.dataset=dataset
         self.ds_len=len(self.dataset)
         self.reuse = reuse

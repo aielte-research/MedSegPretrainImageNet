@@ -471,7 +471,6 @@ class GeneralPlotter(Plotter):
             plt.grid(True, color=color_settings["grid_color"], zorder=0)
             matplotlib_setcolors(ax, color_settings)         
             
-            #Feliratok az x tengelyen
             if self.matplotlib["calc_xtics"]:
                 x_max=max([len(str(x)) for x in self.x[:self.x_len]])
                 plt.xticks([float(str(self.x[:self.x_len][i])[:6]) for i in range(self.x_len) if i % max(int(min(x_max,6) * self.x_len / (4*self.matplotlib["width"])),1)==0])
