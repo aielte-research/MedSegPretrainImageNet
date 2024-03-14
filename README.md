@@ -88,12 +88,21 @@ The  folders in `../All Segmentation Groundtruths/Training Set` and `../All Segm
 
 ```bash
 .
-+--...
++--data
+   +n01440764_10026.npy
+   +n01440764_10027.npy
+   +...
+   +ILSVRC2012_val_00000001.npy
+   +ILSVRC2012_val_00000002.npy
+   +...
++labels.json
 ```
 
 Root directory: `../data/imagenet/`
 
+`data` contains RGB images as .npy files, with channels-first encoding. Pixel intensities are represented as ints between 0 and 255. Filenames are taken from the [original dataset](https://image-net.org/challenges/LSVRC/index.php).
 
+labels.json contains a dictionary, where the keys are the file paths for the arrays in `data`, and the values are the corresponding class indices (represented as an int between 1 and 1000).
 
 
 ### Running experiments
@@ -108,7 +117,7 @@ Config files for training models on each dataset can be found in the `config` di
 
 ### Encoder weights
 
-Weights of the ImageNet-pretrained encoders can be found ???
+Weights of the ImageNet-pretrained models should be in an `../encoder_weights` directory. Model weights are too large for this repository; we plan to publish them upon acceptance of the paper.
 
 ## Results
 
