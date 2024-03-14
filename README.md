@@ -25,6 +25,7 @@ Directory structures for the different datasets:
    +...
 
 ```
+Root directory: `../data/ACDC/`
 
 Patient folders contain data as it is in the [original dataset](https://www.creatis.insa-lyon.fr/Challenge/acdc/).
 
@@ -45,6 +46,8 @@ Patient folders contain data as it is in the [original dataset](https://www.crea
 +--Lung_segm
    +...
 ```
+
+Root directory: `../data/COVID_QU/`
 
 The imgs.npy and inf_masks.npy files contain Nx256x256 shaped arrays with the images and the segmentation masks respectively.
 The train_and_val folder contains the data from the [original](https://www.kaggle.com/datasets/anasmohammedtahir/covidqu) train and validation set. The test folder contains the data from the original test set.
@@ -74,6 +77,7 @@ The train_and_val folder contains the data from the [original](https://www.kaggl
             +--5. Optic Disc
 ```
 
+Root directory: `../data/idrid/`
 The `../Original Images/Training Set` and `../Original Images/Test Set` contains the ?x? images from the original dataset.
 The  folders in `../All Segmentation Groundtruths/Training Set` and `../All Segmentation Groundtruths/Training Set` contains the .tif files with the segmentation masks (as in the original dataset).
 
@@ -84,6 +88,8 @@ The  folders in `../All Segmentation Groundtruths/Training Set` and `../All Segm
 .
 +--...
 ```
+
+Root directory: `../data/imagenet/`
 
 
 
