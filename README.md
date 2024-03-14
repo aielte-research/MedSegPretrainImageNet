@@ -35,13 +35,13 @@ Patient folders contain data as it is in the [original dataset](https://www.crea
 .
 +--Inf_segm
 |  +--data_arrays
-      +--COVID-19
-         +--train_and_val
-            +--imgs.npy
-            +--inf_masks.npy
-         +--test
-            +--imgs.npy
-            +--inf_masks.npy
+|     +--COVID-19
+|        +--train_and_val
+|        |  +--imgs.npy
+|        |  +--inf_masks.npy
+|        +--test
+|           +--imgs.npy
+|           +--inf_masks.npy
 +--Lung_segm
    +...
 ```
@@ -57,15 +57,15 @@ The train_and_val folder contains the data from the [original](https://www.kaggl
 +--Segmentation
    +--A. Segmentation
       +--1. Original Images
-         +--a. Training Set     # Folder with train image .jpg files
-         +--b. Testing Set      # Folder with test image .jpg files
+      |  +--a. Training Set     # Folder with train image .jpg files
+      |  +--b. Testing Set      # Folder with test image .jpg files
       +--2. All Segmentation Groundtruths
          +--a. Training Set     # Folder with train segmentation masks
-            +--1. Microaneurysms
-            +--2. Haemarrhages
-            +--3. Hard Exudates
-            +--4. Soft Exudates
-            +--5. Optic Disc
+         |  +--1. Microaneurysms
+         |  +--2. Haemarrhages
+         |  +--3. Hard Exudates
+         |  +--4. Soft Exudates
+         |  +--5. Optic Disc
          +--b. Testing Set      # Folder with test segmentation masks
             +--1. Microaneurysms    
             +--2. Haemarrhages
