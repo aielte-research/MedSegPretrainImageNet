@@ -16,7 +16,7 @@ class ImageNet(data.Dataset):
     PARAMS = {'use_official_validation': True}
     SPLIT = 0.2
 
-    BASE_PATH = '../imagenet/'
+    BASE_PATH = '../data/imagenet/'
     ARRAYS_PATH = BASE_PATH + 'data/'
     LABELS_PATH = BASE_PATH + 'labels.json'
 
