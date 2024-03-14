@@ -1,0 +1,107 @@
+experiment:
+  number_of_epochs: 300
+data:
+  data: classification.datasets.ImageNet
+  sampling:
+    batch_size: 4096
+  transforms:
+    train: !!python/tuple
+    - torchvision.transforms.RandomResizedCrop:
+        size: 224
+        scale: !!python/tuple
+        - 0.8
+        - 1.0
+    - torchvision.transforms.RandomHorizontalFlip
+    val: !!python/tuple
+    - torchvision.transforms.Resize:
+        size: 224
+    - torchvision.transforms.CenterCrop:
+        size: 224
+    casting:
+      label: torch.LongTensor
+model:
+  model.FeedForwardModel:
+    layers: !!python/tuple
+    - classification.models.DeepResNet:
+        bias: false
+        version: v1
+    - torch.nn.AdaptiveAvgPool2d:
+        output_size: 1
+    - torch.nn.Flatten
+    - torch.nn.Linear:
+        in_features: 2048
+        out_features: 1000
+    weight_init:
+      torch.nn.init.kaiming_normal_:
+        nonlinearity: relu
+training:
+  loss:
+    classification.losses.CrossEntropyLoss:
+      label_smoothing: 0.1
+      label_type: label
+  optimizer:
+    torch.optim.AdamW:
+      learning_rate:
+        optim.scheduler.SequentialLR:
+          base: 0.004
+          schedulers: !!python/tuple
+          - optim.scheduler.LinearLR:
+              start_factor: 1.0e-06
+              end_factor: 1.0
+          - optim.scheduler.CosineAnnealingLR:
+              eta_min: 1.0e-06
+          milestones: 20
+          iteration_unit: batch
+          milestones_unit: epoch
+      betas: !!python/tuple
+      - 0.9
+      - 0.999
+      weight_decay: 0.05
+metrics:
+  metrics: !!python/tuple
+  - metrics.multiclass_metrics.Accuracy
+  - metrics.multiclass_metrics.AUROC
+  - metrics.multiclass_metrics.Top5Accuracy
+  calculation:
+    include_background_in_averages: true
+    apply_softmax: true
+    log_confusion_matrix: false
+meta:
+  technical:
+    experiment_name: ImageNet_test_ResNet50_v1
+    verbose: false
+    maximum_actual_batch_size: 512
+    log_to_neptune: epoch
+    log_to_device: epoch
+    number_of_cpu_threads: 8
+    model_log_checkpoints: !!python/tuple
+    - 1
+    - 2
+    - 5
+    - 10
+    - 20
+    - 30
+    - 40
+    - 50
+    - 75
+    - 100
+    - 125
+    - 150
+    - 175
+    - 200
+    - 250
+    - 300
+    memory_usage_limit: 120
+    seed: 987812
+    number_of_data_loader_workers: 0
+    log_metric_and_loss_plots: true
+    use_cudnn_benchmarking: true
+    use_deterministic_algorithms: false
+    export_plots_as: !!python/tuple
+    - json
+    - html
+    log_best_model: true
+    log_last_model: false
+    model_evaluation:
+      metric: val_metrics/accuracy
+      mode: max

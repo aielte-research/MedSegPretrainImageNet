@@ -1,0 +1,84 @@
+experiment:
+  number_of_epochs: 300
+data:
+  data: classification.datasets.ImageNet
+  sampling:
+    batch_size: 4096
+  transforms:
+    train: !!python/tuple
+    - torchvision.transforms.RandomResizedCrop:
+        size: 224
+        scale: !!python/tuple
+        - 0.8
+        - 1.0
+    - torchvision.transforms.RandomHorizontalFlip
+    val: !!python/tuple
+    - torchvision.transforms.Resize:
+        size: 224
+    - torchvision.transforms.CenterCrop:
+        size: 224
+    casting:
+      label: torch.LongTensor
+model:
+  model.FeedForwardModel:
+    layers: !!python/tuple
+    - segmentation.models.UNet_encoder
+    - torch.nn.AdaptiveAvgPool2d:
+        output_size: 1
+    - torch.nn.Flatten
+    - torch.nn.Linear:
+        in_features: 1024
+        out_features: 1000
+    weight_init:
+      torch.nn.init.kaiming_normal_:
+        nonlinearity: relu
+training:
+  loss:
+    classification.losses.CrossEntropyLoss:
+      label_smoothing: 0.1
+      label_type: label
+  optimizer:
+    torch.optim.AdamW:
+      learning_rate:
+        optim.scheduler.LinearWarmupScheduler:
+          base: 0.004
+          warmup_length: 1565
+          main_scheduler:
+            torch.optim.lr_scheduler.CosineAnnealingLR:
+              eta_min: 1.0e-06
+              T_max: 92335
+          iteration_unit: batch
+      betas: !!python/tuple
+      - 0.9
+      - 0.999
+      weight_decay: 0.05
+metrics:
+  metrics: !!python/tuple
+  - metrics.multiclass_metrics.Accuracy
+  - metrics.multiclass_metrics.AUROC
+  calculation:
+    include_background_in_averages: true
+    apply_softmax: true
+    log_confusion_matrix: false
+meta:
+  technical:
+    experiment_name: ImageNet_test_base_UNet_head
+    verbose: true
+    maximum_actual_batch_size: 384
+    log_to_neptune: true
+    model_log_checkpoints: !!python/tuple
+    - 1
+    - 2
+    - 5
+    - 10
+    - 20
+    - 30
+    - 40
+    - 50
+    - 75
+    - 100
+    - 125
+    - 150
+    - 175
+    - 200
+    - 250
