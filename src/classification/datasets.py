@@ -16,8 +16,9 @@ class ImageNet(data.Dataset):
     PARAMS = {'use_official_validation': True}
     SPLIT = 0.2
 
-    ARRAYS_PATH = '/home/hidygabor/datasets/imagenet/data/'
-    LABELS_PATH = '/home/hidygabor/datasets/imagenet/labels.json'
+    BASE_PATH = '../imagenet/'
+    ARRAYS_PATH = BASE_PATH + 'data/'
+    LABELS_PATH = BASE_PATH + 'labels.json'
 
     HOST = 'a100.cs.elte.hu'
 
