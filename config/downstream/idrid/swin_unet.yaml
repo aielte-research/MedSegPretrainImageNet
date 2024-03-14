@@ -1,0 +1,265 @@
+data:
+  data:
+    segmentation.datasets.IDRiD:
+      train_set_size: 54
+      task: MA
+      cropped_image_sizes: 448
+      base_image_sizes: !!python/tuple [1120, 2240]
+      train_crop_stride: 112
+      seed: 20231027
+  sampling:
+    batch_size: 24
+  transforms:
+    train: !!python/tuple
+    - segmentation.transforms.wrapped_transforms.RandomPick:
+        crop_size: 224
+    - segmentation.transforms.wrapped_transforms.RandomFlip
+    - torchvision.transforms.ColorJitter:
+        brightness: 0.1
+        saturation: 0.1
+        contrast: 0.05
+        hue: 0.05
+    val: segmentation.transforms.wrapped_transforms.Partition
+    casting:
+      mask: torch.LongTensor
+model:
+  segmentation.models.UNet:
+    model: Swin U-Net
+    architecture:
+      activation_function:
+        final: sigmoid
+      mixing_block:
+        segmentation.models.blocks.ConcatLinearBlock:
+          halve_channels: true
+          pass_all_input: true
+      basic_block:
+        segmentation.models.blocks.SwinTransformerBlock:
+          img_size: 224
+          patch_size: 4
+          num_heads_layers: !!python/tuple
+          - 3
+          - 6
+          - 12
+          - 24
+      channels: !!python/tuple
+      - 96
+      - 192
+      - 384
+      - 768
+      change_channels_in_block: false
+      depth: 3
+      width: 2
+      downsampling:
+        segmentation.models.blocks.PatchMerging:
+          norm_layer: torch.nn.LayerNorm
+      final_block:
+        segmentation.models.blocks.FinalPatchExpand_X4:
+          norm_layer: torch.nn.LayerNorm
+          dim_scale: 4
+      in_channel_size: 3
+      out_channel_size: 1
+      layer_scaling: false
+      trainable_downsampling: true
+      linear_channel_mapping: true
+      stem:
+        segmentation.models.blocks.PatchEmbed:
+          patch_size: 4
+          bias: true
+          dilation: 1
+          groups: 1
+          drop_rate: 0.0
+      upsampling:
+        segmentation.models.blocks.PatchExpand:
+          dim_scale: 2
+          norm_layer: torch.nn.LayerNorm
+      stochastic_depth_rate: 0.2
+    weight_init:
+      random:
+        torch.nn.Linear:
+          timm.models.layers.trunc_normal_:
+            std: 0.02
+            bias_init: 0
+            mean: 0.0
+            a: -2.0
+            b: 2.0
+        torch.nn.LayerNorm:
+          torch.nn.init.constant_:
+            val: 1.0
+            bias_init: 0
+      encoder:
+        - weights: null
+          pretrained_encoder: false
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_1.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 1
+          Imagenet_accuracy: 0.015
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_5.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 5
+          Imagenet_accuracy: 0.140
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_20.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 20
+          Imagenet_accuracy: 0.309
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_50.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 50
+          Imagenet_accuracy: 0.433
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_100.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 100
+          Imagenet_accuracy: 0.519
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_150.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 150
+          Imagenet_accuracy: 0.574
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_200.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 200
+          Imagenet_accuracy: 0.645
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_250.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 250
+          Imagenet_accuracy: 0.701
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_simple_pretraining_checkpoint_epoch_300.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: simple
+          training_length: 300
+          Imagenet_accuracy: 0.719
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_1.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 1
+          Imagenet_accuracy: 0.009
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_5.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 5
+          Imagenet_accuracy: 0.176
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_20.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 20
+          Imagenet_accuracy: 0.445
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_50.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 50
+          Imagenet_accuracy: 0.572
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_100.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 100
+          Imagenet_accuracy: 0.622
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_150.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 150
+          Imagenet_accuracy: 0.670
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_200.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 200
+          Imagenet_accuracy: 0.713
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_250.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 250
+          Imagenet_accuracy: 0.750
+        - weights: ../encoder_weights/swin_transformer/swin_transformer_advanced_pretraining_checkpoint_epoch_300.pt
+          strict: false
+          pretrained_encoder: true
+          training_scheme: advanced
+          training_length: 300
+          Imagenet_accuracy: 0.766
+      freeze_weights:
+        - !!python/tuple []
+        - encoder
+training:
+  loss:
+    segmentation.losses.DiceLoss:
+      batchwise: true
+      include_background: true
+      apply_softmax: false
+      smoothing_term: 1.0e-05
+  optimizer:
+    sgd:
+      weight_decay: 0.0001
+      momentum: 0.9
+      learning_rate:
+        optim.scheduler.PolyLearningRateDecay:
+          base: 0.05
+          exponent: 0.9
+          iteration_unit: batch
+          number_of_iterations: auto
+          last_epoch: -1
+      nesterov_momentum: false
+      momentum_dampening: 0.0
+metrics:
+  calculation:
+    thresholds: 0.5
+    draw_mask_contour: false
+    number_of_images_to_save: 5
+    label_type: mask
+    save_sample_images_at: last
+  metrics: !!python/tuple
+  - metrics.DiceIndex
+  - metrics.BalancedAccuracy
+experiment:
+  number_of_epochs: 150
+  number_of_trials: 1
+meta:
+  technical:
+    log_metric_and_loss_plots: true
+    log_to_device: true
+    log_to_neptune: epoch
+    maximum_actual_batch_size: 24
+    name_fields: !!python/tuple
+    - model/segmentation.models.UNet/model
+    - data/data
+    - model/segmentation.models.UNet/weight_init/encoder/training_length:
+        keyword: pretraining_length
+        default: 0
+    - model/segmentation.models.UNet/weight_init/encoder/training_scheme
+    - model/segmentation.models.UNet/weight_init/encoder/Imagenet_accuracy
+    - model/segmentation.models.UNet/weight_init/freeze_weights
+    - data/data/segmentation.datasets.IDRiD/train_set_size
+    model_evaluation:
+      metric: val_metrics/dice_index_threshold_0.5
+      mode: max
+    seed: 123124
+    verbose: false
+    number_of_data_loader_workers: 0
+    use_cudnn_benchmarking: false
+    use_deterministic_algorithms: false
+    number_of_cpu_threads: 16
+    export_plots_as: !!python/tuple
+    - json
+    - html
+    log_best_model: true
+    log_last_model: true
