@@ -61,7 +61,7 @@ class COVIDQUDataset(data.Dataset):
     @staticmethod
     def load_masks(task, segmentation_task, partition):
         mask_file = 'masks' if segmentation_task == 'lung' else 'inf_masks'
-        return np.where(np.load(f'{COVIDQUDataset.PATH}/{task}/{partition}/{mask_file}.npy') != 0, 1, 0).astype(np.float)
+        return np.where(np.load(f'{COVIDQUDataset.PATH}/{task}/{partition}/{mask_file}.npy') != 0, 1, 0).astype(float)
     
     @staticmethod
     def load_distances(task):
@@ -129,7 +129,7 @@ class COVIDQUDataset(data.Dataset):
             if validate_on_test:
                 masks = np.concatenate((masks, self.load_masks(task_path, segmentation_task, 'test')), axis=0)
             masks = masks.squeeze()
-            masks = np.array([cv2.resize(mask, size) for mask in masks]).astype(np.int)
+            masks = np.array([cv2.resize(mask, size) for mask in masks]).astype(int)
             masks = np.expand_dims(masks, 1)
             train_masks = masks[train_idcs]
             val_masks = masks[val_idcs]
@@ -387,7 +387,7 @@ class ACDC(data.Dataset):
         train_labels = [cv2.resize(load_nii(label_path)[0], size) for label_path in train_label_paths]
         
         train_imgs = np.concatenate(train_imgs, axis=2).transpose(2,0,1)
-        train_labels = np.concatenate(train_labels, axis=2).transpose(2,0,1).astype(np.int)
+        train_labels = np.concatenate(train_labels, axis=2).transpose(2,0,1).astype(int)
         
         
         val_frame_paths = []
@@ -401,7 +401,7 @@ class ACDC(data.Dataset):
         val_labels = [cv2.resize(load_nii(label_path)[0], size) for label_path in val_label_paths]
 
         val_imgs = np.concatenate(val_imgs, axis=2).transpose(2,0,1)
-        val_labels = np.concatenate(val_labels, axis=2).transpose(2,0,1).astype(np.int)
+        val_labels = np.concatenate(val_labels, axis=2).transpose(2,0,1).astype(int)
         
 
         self.train = {'x': np.expand_dims(train_imgs, 1),
