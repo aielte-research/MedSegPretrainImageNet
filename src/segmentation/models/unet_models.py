@@ -334,92 +334,6 @@ class UNet(nn.Module):
         encoder: model dictionary for an encoder different to the standard UNet encoder
     '''
 
-    # PARAMS = {
-        # 'architecture/in channel size': {
-        #     'argument name': 'img_ch',
-        #     'default': 3
-        #     },
-        # 'architecture/out channel size': {
-        #     'argument name': 'output_ch',
-        #     'default': 1
-        #     },
-        # 'architecture/depth': {     # number of downsamplings
-        #     'argument name': 'depth',
-        #     'default': 4
-        #     },
-        # 'architecture/width': {     # number of basic blocks on a level
-        #     'argument name': 'width',
-        #     'default': 1
-        #     },
-        # 'architecture/basic block': {
-        #     'argument name': 'basic_block',
-        #     'default': 'segmentation.models.blocks.ConvBlock'
-        #     },
-        # 'architecture/mixing block': {
-        #     'argument name': 'mixing_block',
-        #     'default': 'concatenate'
-        #     },
-        # 'architecture/stem': {
-        #     'argument name': 'preproc_block',
-        #     'default': {'torch.nn.Conv2d': {'kernel_size': 3, 'padding': 'same'}}
-        #     },
-        # 'architecture/final_block': {
-        #     'argument name': 'final_block',
-        #     'default': {'torch.nn.Conv2d': {'kernel_size': 1}}
-        #     },
-        # 'architecture/upsampling': {
-        #     'argument name': 'upsampling_block',
-        #     'default': 'segmentation.models.blocks.UpConvBlock'
-        #     },
-        # 'architecture/downsampling': {
-        #     'argument name': 'downsampling_block',
-        #     'default': {'torch.nn.MaxPool2d': {'kernel_size': 2}}
-        #     },
-        # 'architecture/channels': {
-        #     'argument name': 'channels',
-        #     'default': 'default'
-        #     },    
-        # 'architecture/encoder_channels': {
-        #     'argument name': 'encoder_channels',
-        #     'default': None
-        #     },
-        # 'architecture/decoder_channels': {
-        #     'argument name': 'decoder_channels',
-        #     'default': None
-        #     },
-        # 'architecture/skip_con_channels': {
-        #     'argument name': 'skip_con_channels',
-        #     'default': None
-        #     },
-        # 'architecture/residual_connections': {
-        #     'default': False,       # one of False, convolution, identity
-        #     'argument name': 'residual_connections'
-        #     },
-        # 'architecture/stochastic depth rate': {
-        #     'default': 0,
-        #     'argument name': 'stochastic_depth_rate'
-        #     },
-        # 'architecture/activation function/final': {
-        #     'default': 'sigmoid',
-        #     'argument name': 'final_activation'
-        #     },
-        # 'architecture/layer_scaling': {
-        #     'default': False,
-        #     'argument name': 'layer_scaling'
-        #     },
-        # 'architecture/change_channels_in_block': {
-        #     'argument name': 'change_channels_in_block',
-        #     'default': True
-        #     },
-        # 'architecture/trainable_downsampling': {
-        #     'argument name': 'trainable_downsampling',
-        #     'default': False
-        #     },
-        # 'architecture/encoder': {'argument name': 'encoder', 'default': None},
-
-    #     'weight_init': {'torch.nn.init.kaiming_normal_': {'nonlinearity': 'relu'}}
-    # }
-
     @staticmethod
     def fill_kwargs(config_dict : utils.ConfigDict):
         # TODO: comment what happens here..
@@ -430,11 +344,9 @@ class UNet(nn.Module):
         final_block_dict = config_dict['final_block']
         for submodel_dict in (basic_block_dict, upsampling_dict, downsampling_dict, stem_dict, final_block_dict):
             utils.fill_dict(submodel_dict)
-            print(submodel_dict)
 
         
         mixing_dict = config_dict['mixing block']
-        print(mixing_dict.key())
         if mixing_dict.key() != 'concatenate':
             utils.fill_dict(mixing_dict)
         
@@ -513,11 +425,6 @@ class UNet(nn.Module):
                  skip_con_channels = None, 
                  *args, **kwargs):
         super(UNet, self).__init__()
-        
-        print(stem)
-        print(downsampling)
-        print(basic_block)
-        print(mixing_block)
 
 
         # Defining final activation layer:
