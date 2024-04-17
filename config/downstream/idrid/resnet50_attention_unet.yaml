@@ -25,34 +25,32 @@ data:
 model:
   segmentation.models.UNet:
     model: ResNet50 Attention U-Net
-    architecture:
-      in_channel_size: 3
-      out_channel_size: 1
-      residual_connections: false
-      activation_function:
-        final: sigmoid
-      depth: 4
-      decoder_channels: !!python/tuple
-      - 256
-      - 128
-      - 64
-      - 32
-      - 16
-      skip_con_channels: !!python/tuple
-      - 1024
-      - 512
-      - 256
-      - 64
-      encoder:
-        classification.models.DeepResNet:
-          stochastic_depth_rate: 0.1
-          version: v1
-          bias: false
-          head: false
-      width: 1
-      mixing_block: segmentation.models.blocks.AttentionBlock
-      encoder_channels: null
-      linear_channel_mapping: false
+    in_channel_size: 3
+    out_channel_size: 1
+    residual_connections: false
+    final_activation: sigmoid
+    depth: 4
+    decoder_channels: !!python/tuple
+    - 256
+    - 128
+    - 64
+    - 32
+    - 16
+    skip_con_channels: !!python/tuple
+    - 1024
+    - 512
+    - 256
+    - 64
+    encoder:
+      classification.models.DeepResNet:
+        stochastic_depth_rate: 0.1
+        version: v1
+        bias: false
+        head: false
+    width: 1
+    mixing_block: segmentation.models.blocks.AttentionBlock
+    encoder_channels: null
+    linear_channel_mapping: false
     weight_init:
       random:
         torch.nn.init.kaiming_normal_:

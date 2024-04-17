@@ -25,12 +25,10 @@ data:
 model:
   segmentation.models.UNet:
     model: basic U-Net
-    architecture:
-      in_channel_size: 3
-      out_channel_size: 1
-      residual_connections: false
-      activation_function:
-        final: sigmoid
+    in_channel_size: 3
+    out_channel_size: 1
+    residual_connections: false
+    final_activation: sigmoid
     weight_init:
       random:
         torch.nn.init.kaiming_normal_:

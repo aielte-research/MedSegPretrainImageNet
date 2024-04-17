@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 import utils
-from segmentation.models import drop_path
+# from segmentation.models import drop_path
 
 class DeepResNet(nn.Module):
     

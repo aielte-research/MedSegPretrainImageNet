@@ -25,54 +25,52 @@ data:
 model:
   segmentation.models.UNet:
     model: Swin U-Net
-    architecture:
-      activation_function:
-        final: sigmoid
-      mixing_block:
-        segmentation.models.blocks.ConcatLinearBlock:
-          halve_channels: true
-          pass_all_input: true
-      basic_block:
-        segmentation.models.blocks.SwinTransformerBlock:
-          img_size: 224
-          patch_size: 4
-          num_heads_layers: !!python/tuple
-          - 3
-          - 6
-          - 12
-          - 24
-      channels: !!python/tuple
-      - 96
-      - 192
-      - 384
-      - 768
-      change_channels_in_block: false
-      depth: 3
-      width: 2
-      downsampling:
-        segmentation.models.blocks.PatchMerging:
-          norm_layer: torch.nn.LayerNorm
-      final_block:
-        segmentation.models.blocks.FinalPatchExpand_X4:
-          norm_layer: torch.nn.LayerNorm
-          dim_scale: 4
-      in_channel_size: 3
-      out_channel_size: 1
-      layer_scaling: false
-      trainable_downsampling: true
-      linear_channel_mapping: true
-      stem:
-        segmentation.models.blocks.PatchEmbed:
-          patch_size: 4
-          bias: true
-          dilation: 1
-          groups: 1
-          drop_rate: 0.0
-      upsampling:
-        segmentation.models.blocks.PatchExpand:
-          dim_scale: 2
-          norm_layer: torch.nn.LayerNorm
-      stochastic_depth_rate: 0.2
+    final_activation: sigmoid
+    mixing_block:
+      segmentation.models.blocks.ConcatLinearBlock:
+        halve_channels: true
+        pass_all_input: true
+    basic_block:
+      segmentation.models.blocks.SwinTransformerBlock:
+        img_size: 224
+        patch_size: 4
+        num_heads_layers: !!python/tuple
+        - 3
+        - 6
+        - 12
+        - 24
+    channels: !!python/tuple
+    - 96
+    - 192
+    - 384
+    - 768
+    change_channels_in_block: false
+    depth: 3
+    width: 2
+    downsampling:
+      segmentation.models.blocks.PatchMerging:
+        norm_layer: torch.nn.LayerNorm
+    final_block:
+      segmentation.models.blocks.FinalPatchExpand_X4:
+        norm_layer: torch.nn.LayerNorm
+        dim_scale: 4
+    in_channel_size: 3
+    out_channel_size: 1
+    layer_scaling: false
+    trainable_downsampling: true
+    linear_channel_mapping: true
+    stem:
+      segmentation.models.blocks.PatchEmbed:
+        patch_size: 4
+        bias: true
+        dilation: 1
+        groups: 1
+        drop_rate: 0.0
+    upsampling:
+      segmentation.models.blocks.PatchExpand:
+        dim_scale: 2
+        norm_layer: torch.nn.LayerNorm
+    stochastic_depth_rate: 0.2
     weight_init:
       random:
         torch.nn.Linear:
