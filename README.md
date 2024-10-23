@@ -117,7 +117,7 @@ Config files for training models on each dataset can be found in the `config` di
 
 ### Encoder weights
 
-Weights of the ImageNet-pretrained models should be in an `../encoder_weights` directory. Model weights are too large for this repository; we plan to publish them upon acceptance of the paper.
+Weights of the ImageNet-pretrained models should be in an `../encoder_weights` directory. Our pretrained model weights can be downloaded from [here](https://zenodo.org/records/13971513).
 
 ## Results
 
