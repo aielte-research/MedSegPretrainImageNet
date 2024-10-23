@@ -1,7 +1,6 @@
-# ImageNet pretraining for medical image segmentation
-## Enhancing efficiency via transferability metrics
+# Enhancing pretraining efficiency for medical image segmentation via transferability metrics
 
-This repository contains the code and all the results related to the paper “ImageNet pretraining for medical image segmentation: Enhancing efficiency via transferability metrics”.
+This repository contains the code and all the results related to the paper “Enhancing pretraining efficiency for medical image segmentation via transferability metrics”.
 
 ## Reproducibility
 
