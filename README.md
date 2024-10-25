@@ -1,6 +1,6 @@
 # Enhancing pretraining efficiency for medical image segmentation via transferability metrics
 
-This repository contains the code and all the results related to the paper “Enhancing pretraining efficiency for medical image segmentation via transferability metrics”.
+This repository contains the code and all the results related to the paper “Enhancing pretraining efficiency for medical image segmentation via transferability metrics” (arXiv:[2410.18677](https://arxiv.org/abs/2410.18677)).
 
 ## Reproducibility
 
